@@ -51,21 +51,24 @@ curl -X POST "http://127.0.0.1:8000/generate" \
 
 ## Docker Image
 
-Currently ships a lightweight CPU-only image, built with `Dockerfile.cpu` (CPU-only torch build, ~1.2GB).
+Built with `Dockerfile.cpu` (CPU-only torch build). Default model is `Qwen/Qwen2.5-1.5B-Instruct` (~3GB) — first run downloads weights from Hugging Face Hub, so expect a few minutes on first start.
 
 Build:
+
 ```bash
 docker build -f Dockerfile.cpu -t transformer-serve:cpu .
 ```
 
-Run (default model):
+Run (default model — Qwen2.5-1.5B-Instruct):
+
 ```bash
 docker run -p 8000:8000 transformer-serve:cpu
 ```
 
-Run (custom model):
+Run (custom model, e.g. flan-t5-small):
+
 ```bash
-docker run -p 8000:8000 -e MODEL_NAME="gpt2" -e MODEL_TYPE="causal" transformer-serve:cpu
+docker run -p 8000:8000 -e MODEL_NAME="google/flan-t5-small" -e MODEL_TYPE="seq2seq" transformer-serve:cpu
 ```
 
 ## API — `POST /generate`
@@ -101,6 +104,7 @@ Returns runtime info about the loaded model and device.
 ```
 
 ## Supported Model Types
-- `seq2seq`  — encoder-decoder models (e.g. `google/flan-t5-small`)
-- `causal` — decoder-only model (e.g. `gpt2`, `microsoft/phi-2`)
+
+- `causal` — decoder-only models (e.g. `Qwen/Qwen2.5-1.5B-Instruct`, `gpt2`, `microsoft/phi-2`)
+- `seq2seq` — encoder-decoder models (e.g. `google/flan-t5-small`)
 
