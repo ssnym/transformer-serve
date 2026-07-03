@@ -64,6 +64,24 @@ Response:
 {"output": "generated text here"}
 ```
 
+## API — `GET /health`
+
+Returns runtime info about the loaded model and device.
+
+Response:
+```json
+{
+  "status": "OK",
+  "uptime_seconds": 10.93,
+  "device": "cpu",
+  "device_type": "cpu",
+  "model_name": "google/flan-t5-small",
+  "model_type": "t5",
+  "num_parameters": 76961152,
+  "configured_model_type": "seq2seq"
+}
+```
+
 ## Supported Model Types
 - `seq2seq`  — encoder-decoder models (e.g. `google/flan-t5-small`)
 - `causal` — decoder-only model (e.g. `gpt2`, `microsoft/phi-2`)
