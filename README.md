@@ -1,4 +1,4 @@
-# Transformer Server
+# Transformer Serve
 
 Configurable inference API for Hugging Face text-generation models. Swap models via env vars — no code changes.
 
@@ -34,17 +34,17 @@ Currently ships a lightweight CPU-only image, built with `Dockerfile.cpu` (CPU-o
 
 Build:
 ```bash
-docker build -f Dockerfile.cpu -t transformer-server:cpu .
+docker build -f Dockerfile.cpu -t transformer-serve:cpu .
 ```
 
 Run (default model):
 ```bash
-docker run -p 8000:8000 transformer-server:cpu
+docker run -p 8000:8000 transformer-serve:cpu
 ```
 
 Run (custom model):
 ```bash
-docker run -p 8000:8000 -e MODEL_NAME="gpt2" -e MODEL_TYPE="causal" transformer-server:cpu
+docker run -p 8000:8000 -e MODEL_NAME="gpt2" -e MODEL_TYPE="causal" transformer-serve:cpu
 ```
 
 ## API — `POST /generate`
