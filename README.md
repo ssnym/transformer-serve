@@ -82,24 +82,21 @@ Request body:
 
 Response:
 ```json
-{"output": "generated text here"}
+{"output": "Explain what is AI and how it works.\nArtificial Intelligence (AI) refers to the simulation of human intelligence in machines that are programmed to think, learn, reason, and act like humans. It involves creating algorithms and models that can process large amounts of data, recognize patterns, make decisions, and perform tasks without explicit programming.\n\nThere are several types of AI:\n\n1. Narrow or Weak AI..."}
 ```
 
 ## API — `GET /health`
 
 Returns runtime info about the loaded model and device.
 
-Response:
 ```json
 {
   "status": "OK",
-  "uptime_seconds": 10.93,
   "device": "cpu",
-  "device_type": "cpu",
-  "model_name": "google/flan-t5-small",
-  "model_type": "t5",
-  "num_parameters": 76961152,
-  "configured_model_type": "seq2seq"
+  "model_name": "Qwen/Qwen2.5-1.5B-Instruct",
+  "model_type": "qwen2",
+  "num_parameters": 1543714304,
+  "configured_model_type": "causal"
 }
 ```
 
