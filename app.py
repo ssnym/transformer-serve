@@ -1,6 +1,6 @@
 import torch
 import time
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from pydantic import BaseModel, Field
 from core.model_loader import load_model
 from core.config import MODEL_TYPE
@@ -20,8 +20,15 @@ class GenerateRequest(BaseModel):
 
 
 @app.get("/")
-def home():
-    return{"message":"HF Transformer Serve : Causal + Seq2Seq"}
+def root(request: Request):
+    base_url = str(request.base_url).rstrip("/")
+    return {
+        "message": "HF Transformer Serve — Causal + Seq2Seq inference API",
+        "model": "Qwen/Qwen2.5-1.5B-Instruct",
+        "try_it": f'curl -X POST {base_url}/generate -H "Content-Type: application/json" -d \'{{"prompt": "Explain what is AI"}}\'',
+        "health_check": f"{base_url}/health",
+        "docs": "https://github.com/ssnym/transformer-serve"
+    }
 
 
 @app.post("/generate")
