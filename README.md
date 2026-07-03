@@ -30,19 +30,21 @@ curl -X POST "http://127.0.0.1:8000/generate" \
 
 ## Docker Image
 
+Currently ships a lightweight CPU-only image, built with `Dockerfile.cpu` (CPU-only torch build, ~1.2GB).
+
 Build:
 ```bash
-docker build -t transformer-server .
+docker build -f Dockerfile.cpu -t transformer-server:cpu .
 ```
 
 Run (default model):
 ```bash
-docker run -p 8000:8000 transformer-server
+docker run -p 8000:8000 transformer-server:cpu
 ```
 
 Run (custom model):
 ```bash
-docker run -p 8000:8000 -e MODEL_NAME="gpt2" -e MODEL_TYPE="causal" transformer-server
+docker run -p 8000:8000 -e MODEL_NAME="gpt2" -e MODEL_TYPE="causal" transformer-server:cpu
 ```
 
 ## API — `POST /generate`
