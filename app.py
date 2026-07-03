@@ -26,9 +26,9 @@ def root(request: Request):
     return {
         "message": "HF Transformer Serve — Causal + Seq2Seq inference API",
         "model": "Qwen/Qwen2.5-1.5B-Instruct",
-        "try_it": f'curl -X POST {base_url}/generate -H "Content-Type: application/json" -d \'{{"prompt": "Explain what is AI"}}\'',
+        "generate_endpoint": f"{base_url}/generate (POST)",
         "health_check": f"{base_url}/health",
-        "docs": "https://github.com/ssnym/transformer-serve"
+        "docs": "https://github.com/ssnym/transformer-serve — see README for a ready-to-copy curl example"
     }
 
 
