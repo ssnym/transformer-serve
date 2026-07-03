@@ -6,6 +6,23 @@ Configurable inference API for Hugging Face text-generation models. Swap models 
 
 **Docker Hub:** [https://hub.docker.com/r/ssnym/transformer-serve](https://hub.docker.com/r/ssnym/transformer-serve)
 
+## Try it now — no setup required
+
+The API is live. Run these directly:
+
+```bash
+curl https://ssnym-transformer-serve.hf.space/health
+```
+
+```bash
+curl -X POST "https://ssnym-transformer-serve.hf.space/generate" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Explain what is AI"}'
+```
+
+> Note: runs on free CPU hardware and sleeps after inactivity — first request after idle may take 30-60s to wake up.
+
+
 ## Features
 - Serves any seq2seq or causal HF text-generation model
 - Automatic CPU/GPU detection
