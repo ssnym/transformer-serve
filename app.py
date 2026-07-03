@@ -21,7 +21,8 @@ class GenerateRequest(BaseModel):
 
 @app.get("/")
 def root(request: Request):
-    base_url = str(request.base_url).rstrip("/")
+    scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
+    base_url = f"{scheme}://{request.url.netloc}"
     return {
         "message": "HF Transformer Serve — Causal + Seq2Seq inference API",
         "model": "Qwen/Qwen2.5-1.5B-Instruct",
