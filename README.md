@@ -2,6 +2,8 @@
 
 Configurable inference API for Hugging Face text-generation models. Swap models via env vars — no code changes.
 
+**Docker Hub:** https://hub.docker.com/r/ssnym/transformer-serve
+
 ## Features
 - Serves any seq2seq or causal HF text-generation model
 - Automatic CPU/GPU detection
