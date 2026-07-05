@@ -1,6 +1,13 @@
 # Transformer Serve
 
-Configurable inference API for Hugging Face text-generation models. Swap models via env vars — no code changes.
+Configurable inference API for Hugging Face text-generation models.  
+Swap models via environment variables without changing application code.
+
+<p align="center">
+  <img src="assets/homepage.png"
+       width="95%"
+       alt="Transformer Serve running on Hugging Face Spaces">
+</p>
 
 **Live Demo:** [https://ssnym-transformer-serve.hf.space](https://ssnym-transformer-serve.hf.space)
 
@@ -24,16 +31,17 @@ curl -X POST "https://ssnym-transformer-serve.hf.space/generate" \
 
 
 ## Features
-- Serves any seq2seq or causal HF text-generation model
+- Supports Hugging Face seq2seq or causal text-generation models
 - Automatic CPU/GPU detection
 - Configurable parameters `max_new_tokens`, `temperature`, `do_sample`
 - Input validation
-- Dockerized for    portable deployment
+- Dockerized for portable deployment
+- Deployable to Hugging Face Spaces
 
 ## Run Locally
 ```bash
 
-git clone git@github.com:ssnym/transformer-serve.git
+git clone https://github.com/ssnym/transformer-serve.git
 
 cd transformer-serve
 
@@ -49,7 +57,7 @@ curl -X POST "http://127.0.0.1:8000/generate" \
   -d '{"prompt": "Explain what is AI"}'
 ```
 
-## Docker Image
+## Run with Docker
 
 Built with `Dockerfile.cpu` (CPU-only torch build). Default model is `Qwen/Qwen2.5-1.5B-Instruct` (~3GB) — first run downloads weights from Hugging Face Hub, so expect a few minutes on first start.
 
