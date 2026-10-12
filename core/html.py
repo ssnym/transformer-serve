@@ -41,11 +41,6 @@ HTML_PAGE = """
     display: flex; flex-direction: column; gap: 14px;
   }
 
-  .notice {
-    font-size: 12px; color: #999; background: #212121;
-    border: 1px solid #2a2a2a; padding: 10px 14px; border-radius: 8px;
-  }
-
   .params {
     display: flex; gap: 24px; background: #1f1f1f;
     border: 1px solid #2a2a2a; border-radius: 10px;
@@ -110,7 +105,7 @@ HTML_PAGE = """
     <span class="dot" id="statusDot"></span>
     <div>
       <h1>Transformer Serve</h1>
-      <div class="model">Qwen2.5-0.5B-Instruct &middot; causal &middot; CPU</div>
+      <div class="model" id="modelInfo">loading model info...</div>
     </div>
   </div>
   <a href="https://github.com/ssnym/transformer-serve" target="_blank">Source on GitHub &rarr;</a>
@@ -119,8 +114,6 @@ HTML_PAGE = """
 <div class="body-wrap">
   <div class="scroll-area" id="scrollArea">
     <main>
-      <div class="notice">Free-tier CPU &mdash; first response after inactivity may take 30&ndash;60s to wake up, then a few seconds per reply.</div>
-
       <div class="params">
         <div class="param">
           <label>Max new tokens <b id="maxTokVal">100</b></label>
@@ -134,7 +127,7 @@ HTML_PAGE = """
 
       <div class="thread" id="thread">
         <div class="row model">
-          <div class="bubble model placeholder">Ask me anything &mdash; running live on a free Hugging Face CPU Space.</div>
+          <div class="bubble model placeholder">Ask me anything. Set temperature to 0 for deterministic answers.</div>
         </div>
       </div>
     </main>
@@ -154,6 +147,7 @@ HTML_PAGE = """
   const promptBox = document.getElementById('prompt');
   const sendBtn = document.getElementById('sendBtn');
   const dot = document.getElementById('statusDot');
+  const modelInfo = document.getElementById('modelInfo');
   const maxTok = document.getElementById('maxTok');
   const temp = document.getElementById('temp');
   const maxTokVal = document.getElementById('maxTokVal');
@@ -170,9 +164,14 @@ HTML_PAGE = """
   async function checkHealth() {
     try {
       const res = await fetch('/health');
-      dot.className = 'dot ' + (res.ok ? 'ok' : 'bad');
+      if (!res.ok) throw new Error('bad status');
+      const h = await res.json();
+      dot.className = 'dot ok';
+      modelInfo.textContent =
+        h.model_name + ' \\u00b7 ' + h.configured_model_type + ' \\u00b7 ' + h.device_type.toUpperCase();
     } catch (e) {
       dot.className = 'dot bad';
+      modelInfo.textContent = 'server unreachable';
     }
   }
   checkHealth();
@@ -208,7 +207,7 @@ HTML_PAGE = """
           prompt: text,
           max_new_tokens: parseInt(maxTok.value),
           temperature: parseFloat(temp.value) / 100,
-          do_sample: false
+          do_sample: parseFloat(temp.value) > 0,
         })
       });
       const data = await res.json();
