@@ -9,8 +9,7 @@ Swap models via environment variables without changing application code.
        alt="Transformer Serve running on Hugging Face Spaces">
 </p>
 
-**Live Demo:** [https://ssnym-transformer-serve.hf.space](https://ssnym-transformer-serve.hf.space)
-
+**Live Demo:** [https://ssnym-transformer-serve.hf.space](https://ssnym-transformer-serve.hf.space)  
 **Docker Hub:** [https://hub.docker.com/r/ssnym/transformer-serve](https://hub.docker.com/r/ssnym/transformer-serve)
 
 ## Try it now — no setup required
@@ -30,13 +29,33 @@ curl -X POST "https://ssnym-transformer-serve.hf.space/generate" \
 > Note: runs on free CPU hardware and sleeps after inactivity — first request after idle may take 30-60s to wake up.
 
 
-## Features
-- Supports Hugging Face seq2seq or causal text-generation models
-- Automatic CPU/GPU detection
-- Configurable parameters `max_new_tokens`, `temperature`, `do_sample`
-- Input validation
-- Dockerized for portable deployment
-- Deployable to Hugging Face Spaces
+## Quick start with Docker
+
+```bash
+docker pull ssnym/transformer-serve:latest
+docker run -p 8000:8000 ssnym/transformer-serve:latest
+```
+
+Open `http://localhost:8000` for the web UI, or call the API:
+
+```bash
+curl -X POST "http://localhost:8000/generate" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "What is the capital of France?"}'
+```
+
+> The default model is `Qwen/Qwen2.5-0.5B-Instruct`. The image is about 700 MB; the model (about 1 GB) downloads on first start.
+
+### Use a different model
+
+```bash
+docker run -p 8000:8000 \
+  -e MODEL_NAME="google/flan-t5-small" \
+  -e MODEL_TYPE="seq2seq" \
+  ssnym/transformer-serve:latest
+```
+
+
 
 ## Run Locally
 ```bash
@@ -57,27 +76,20 @@ curl -X POST "http://127.0.0.1:8000/generate" \
   -d '{"prompt": "Explain what is AI"}'
 ```
 
-## Run with Docker
+### To build the image yourself.
 
-Built with `Dockerfile.cpu` (CPU-only torch build). Default model is `Qwen/Qwen2.5-0.5B-Instruct` (~1GB) — first run downloads weights from Hugging Face Hub, so expect a few minutes on first start.
+> Built with `Dockerfile.cpu` (CPU-only torch build). Default model is `Qwen/Qwen2.5-0.5B-Instruct` (~1GB) — first run downloads weights from Hugging Face Hub, so expect a few minutes on first start.
 
 Build:
 
 ```bash
-docker build -f Dockerfile.cpu -t transformer-serve:cpu .
+docker build -f Dockerfile.cpu -t transformer-serve:local .
+
+# Run (default model — Qwen2.5-0.5B-Instruct):
+docker run -p 8000:8000 transformer-serve:local
 ```
 
-Run (default model — Qwen2.5-0.5B-Instruct):
 
-```bash
-docker run -p 8000:8000 transformer-serve:cpu
-```
-
-Run (custom model, e.g. flan-t5-small):
-
-```bash
-docker run -p 8000:8000 -e MODEL_NAME="google/flan-t5-small" -e MODEL_TYPE="seq2seq" transformer-serve:cpu
-```
 
 ## API — `POST /generate`
 
@@ -85,16 +97,19 @@ Request body:
 ```json
 {
 "prompt": "Explain what is AI",
-"max_new_tokens": 50,
+"max_new_tokens": 120,
 "temperature": 0.7,
-"do_sample": false
+"do_sample": true
 }
 ```
 
 Response:
 ```json
-{"output": "Explain what is AI and how it works.\nArtificial Intelligence (AI) refers to the simulation of human intelligence in machines that are programmed to think, learn, reason, and act like humans. It involves creating algorithms and models that can process large amounts of data, recognize patterns, make decisions, and perform tasks without explicit programming.\n\nThere are several types of AI:\n\n1. Narrow or Weak AI..."}
+{"output": "Artificial intelligence is the field of building systems that perform tasks requiring human-like reasoning..."}
 ```
+
+Omitted fields use the defaults in `app.py`. With `do_sample` set to `false`, the model uses greedy decoding and `temperature` has no effect.
+
 
 ## API — `GET /health`
 
@@ -104,12 +119,22 @@ Returns runtime info about the loaded model and device.
 {
   "status": "OK",
   "device": "cpu",
+  "device_type": "cpu",
   "model_name": "Qwen/Qwen2.5-0.5B-Instruct",
   "model_type": "qwen2",
-  "num_parameters": 1543714304,
-  "configured_model_type": "causal"
+  "num_parameters": 494032768,
+  "configured_model_type": "causal",
+  "chat_template": true
 }
 ```
+
+## Features
+- Supports Hugging Face seq2seq or causal text-generation models
+- Automatic CPU/GPU detection
+- Configurable parameters `max_new_tokens`, `temperature`, `do_sample`
+- Input validation
+- Dockerized for portable deployment
+- Deployable to Hugging Face Spaces
 
 ## Supported Model Types
 
