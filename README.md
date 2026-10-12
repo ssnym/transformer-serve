@@ -59,7 +59,7 @@ curl -X POST "http://127.0.0.1:8000/generate" \
 
 ## Run with Docker
 
-Built with `Dockerfile.cpu` (CPU-only torch build). Default model is `Qwen/Qwen2.5-1.5B-Instruct` (~3GB) — first run downloads weights from Hugging Face Hub, so expect a few minutes on first start.
+Built with `Dockerfile.cpu` (CPU-only torch build). Default model is `Qwen/Qwen2.5-0.5B-Instruct` (~1GB) — first run downloads weights from Hugging Face Hub, so expect a few minutes on first start.
 
 Build:
 
@@ -67,7 +67,7 @@ Build:
 docker build -f Dockerfile.cpu -t transformer-serve:cpu .
 ```
 
-Run (default model — Qwen2.5-1.5B-Instruct):
+Run (default model — Qwen2.5-0.5B-Instruct):
 
 ```bash
 docker run -p 8000:8000 transformer-serve:cpu
@@ -104,7 +104,7 @@ Returns runtime info about the loaded model and device.
 {
   "status": "OK",
   "device": "cpu",
-  "model_name": "Qwen/Qwen2.5-1.5B-Instruct",
+  "model_name": "Qwen/Qwen2.5-0.5B-Instruct",
   "model_type": "qwen2",
   "num_parameters": 1543714304,
   "configured_model_type": "causal"
@@ -113,6 +113,6 @@ Returns runtime info about the loaded model and device.
 
 ## Supported Model Types
 
-- `causal` — decoder-only models (e.g. `Qwen/Qwen2.5-1.5B-Instruct`, `gpt2`, `microsoft/phi-2`)
+- `causal` — decoder-only models (e.g. `Qwen/Qwen2.5-0.5B-Instruct`, `gpt2`, `microsoft/phi-2`)
 - `seq2seq` — encoder-decoder models (e.g. `google/flan-t5-small`)
 

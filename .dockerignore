@@ -1,8 +1,8 @@
+.env
 .git
 .gitignore
+.vscode/
 __pycache__/
 *.pyc
-.env
-.cache/
-.vscode/
 models/
+hf/

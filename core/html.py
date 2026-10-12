@@ -110,7 +110,7 @@ HTML_PAGE = """
     <span class="dot" id="statusDot"></span>
     <div>
       <h1>Transformer Serve</h1>
-      <div class="model">Qwen2.5-1.5B-Instruct &middot; causal &middot; CPU</div>
+      <div class="model">Qwen2.5-0.5B-Instruct &middot; causal &middot; CPU</div>
     </div>
   </div>
   <a href="https://github.com/ssnym/transformer-serve" target="_blank">Source on GitHub &rarr;</a>

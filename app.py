@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from core.model_loader import load_model
 from core.html import HTML_PAGE
 from services.inference import generate_text
-from core.config import MODEL_TYPE, SYSTEM_PROMPT
+from core.config import MODEL_TYPE, MODEL_NAME, SYSTEM_PROMPT
 
 START_TIME = time.time()
 
@@ -43,7 +43,7 @@ def root(request: Request):
     base_url = f"{scheme}://{request.url.netloc}"
     return {
         "message": "HF Transformer Serve — Causal + Seq2Seq inference API",
-        "model": "Qwen/Qwen2.5-1.5B-Instruct",
+        "model": MODEL_NAME,
         "generate_endpoint": f"{base_url}/generate (POST)",
         "health_check": f"{base_url}/health",
         "docs": "https://github.com/ssnym/transformer-serve — see README for a ready-to-copy curl example"
