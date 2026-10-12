@@ -1,10 +1,12 @@
 import torch
 import time
 from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from core.model_loader import load_model
-from core.config import MODEL_TYPE
+from core.html import HTML_PAGE
 from services.inference import generate_text
+from core.config import MODEL_TYPE, SYSTEM_PROMPT
 
 START_TIME = time.time()
 
@@ -15,11 +17,27 @@ tokenizer, model, device = load_model()
 class GenerateRequest(BaseModel):
     prompt: str = Field(..., min_length=1, max_length=2000)
     max_new_tokens: int = Field(default=100, ge=1, le=512)
-    temperature: float = Field(default=0.6, ge=0.0, le=2.0)
-    do_sample: bool = False
+    temperature: float = Field(default=0.7, ge=0.0, le=2.0)
+    do_sample: bool = True   # sampling on, so temperature takes effect
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
+def root():
+    return HTML_PAGE
+
+
+@app.post("/generate")
+def generate_post(request: GenerateRequest):
+    text = generate_text(
+        request.prompt, tokenizer, model, device,
+        system_prompt = SYSTEM_PROMPT,
+        max_new_tokens=request.max_new_tokens,
+        temperature=request.temperature,
+        do_sample=request.do_sample
+    )
+    return {"output" : text}
+
+@app.get("/info")
 def root(request: Request):
     scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
     base_url = f"{scheme}://{request.url.netloc}"
@@ -31,17 +49,6 @@ def root(request: Request):
         "docs": "https://github.com/ssnym/transformer-serve — see README for a ready-to-copy curl example"
     }
 
-
-@app.post("/generate")
-def generate_post(request: GenerateRequest):
-    text = generate_text(
-        request.prompt, tokenizer, model, device,
-        max_new_tokens=request.max_new_tokens,
-        temperature=request.temperature,
-        do_sample=request.do_sample
-    )
-    return {"output" : text}
-
 @app.get("/health")
 def health():
     return {
@@ -52,6 +59,7 @@ def health():
         "model_name" : model.config._name_or_path,
         "model_type" : model.config.model_type,
         "num_parameters" : sum(p.numel() for p in model.parameters()),
-        "configured_model_type" : MODEL_TYPE
+        "configured_model_type" : MODEL_TYPE,
+        "chat_template": tokenizer.chat_template is not None,
 
     }
