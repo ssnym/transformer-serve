@@ -1,4 +1,6 @@
 import torch
+from threading import Thread
+from transformers import TextIteratorStreamer
 
 
 def build_input(prompt, tokenizer, model, system_prompt):
@@ -14,6 +16,34 @@ def build_input(prompt, tokenizer, model, system_prompt):
     # Base model or seq2seq get the raw input
     return prompt
 
+
+def stream_text(prompt:str, tokenizer, model, device, system_prompt,
+                max_new_tokens:int = 100, temperature: float = 0.2, do_sample: bool = True):
+    text_in = build_input(prompt, tokenizer, model, system_prompt)
+    inputs = tokenizer(text_in, return_tensors="pt", add_special_tokens=False).to(device)
+    streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
+    gen_kwargs = {
+        **inputs,
+        "streamer": streamer,
+        "max_new_tokens": max_new_tokens,
+        "pad_token_id": tokenizer.eos_token_id,
+        "do_sample": do_sample,
+    }
+
+    if do_sample:
+        gen_kwargs.update(temperature=temperature, top_p=0.9)
+
+    def run():
+        try:
+            with torch.no_grad():
+                model.generate(**gen_kwargs)
+        except Exception as e:
+            streamer.text_queue.put(f"\n[error: {e}]")
+            streamer.end()
+
+    Thread(target=run, daemon=True).start()
+    return streamer  # iterate over this to get text chunks
+         
 
 
 def generate_text(prompt:str, tokenizer, model, device, system_prompt, 

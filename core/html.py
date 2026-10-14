@@ -189,18 +189,18 @@ HTML_PAGE = """
     return bubble;
   }
 
-  async function send() {
+      async function send() {
     const text = promptBox.value.trim();
     if (!text) return;
     thread.innerHTML = '';
     addRow(text, 'user');
-    const typing = addRow('Thinking...', 'model', 'typing');
+    const typing = addRow('', 'model', 'typing');
     sendBtn.disabled = true;
     promptBox.value = '';
     promptBox.style.height = 'auto';
 
     try {
-      const res = await fetch('/generate', {
+      const res = await fetch('/generate/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -210,9 +210,17 @@ HTML_PAGE = """
           do_sample: parseFloat(temp.value) > 0,
         })
       });
-      const data = await res.json();
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+
       typing.classList.remove('typing');
-      typing.textContent = data.output || JSON.stringify(data);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        typing.textContent += decoder.decode(value, { stream: true });
+        scrollArea.scrollTop = scrollArea.scrollHeight;
+      }
     } catch (e) {
       typing.classList.remove('typing');
       typing.textContent = 'Error: could not reach the API. Try again in a moment.';

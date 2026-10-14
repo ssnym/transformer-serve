@@ -1,11 +1,11 @@
 import torch
 import time
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
+from services.inference import generate_text, stream_text
 from pydantic import BaseModel, Field
 from core.model_loader import load_model
 from core.html import HTML_PAGE
-from services.inference import generate_text
 from core.config import MODEL_TYPE, MODEL_NAME, SYSTEM_PROMPT
 
 START_TIME = time.time()
@@ -36,6 +36,18 @@ def generate_post(request: GenerateRequest):
         do_sample=request.do_sample
     )
     return {"output" : text}
+
+@app.post("/generate/stream")
+def generate_stream(request: GenerateRequest):
+    streamer = stream_text(
+        request.prompt, tokenizer, model, device,
+        system_prompt = SYSTEM_PROMPT,
+        max_new_tokens=request.max_new_tokens,
+        temperature=request.temperature,
+        do_sample=request.do_sample
+    )
+    return StreamingResponse(streamer, media_type="text/plain; charset=utf-8")
+
 
 @app.get("/info")
 def root(request: Request):

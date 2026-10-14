@@ -1,7 +1,10 @@
 # Transformer Serve
 
-Configurable inference API for Hugging Face text-generation models.  
-Swap models via environment variables without changing application code.
+Configurable inference API for Hugging Face text-generation models.  Swap models via environment variables without changing application code.
+
+
+**Live Demo:** [https://ssnym-transformer-serve.hf.space](https://ssnym-transformer-serve.hf.space)  
+**Docker Hub:** [https://hub.docker.com/r/ssnym/transformer-serve](https://hub.docker.com/r/ssnym/transformer-serve)
 
 <p align="center">
   <img src="assets/homepage.png"
@@ -9,44 +12,48 @@ Swap models via environment variables without changing application code.
        alt="Transformer Serve running on Hugging Face Spaces">
 </p>
 
-**Live Demo:** [https://ssnym-transformer-serve.hf.space](https://ssnym-transformer-serve.hf.space)  
-**Docker Hub:** [https://hub.docker.com/r/ssnym/transformer-serve](https://hub.docker.com/r/ssnym/transformer-serve)
-
 ## Try it now — no setup required
 
-The API is live. Run these directly:
+The API is running on a free CPU Space. Stream an answer token by token:
 
 ```bash
-curl https://ssnym-transformer-serve.hf.space/health
+curl -N -X POST "https://ssnym-transformer-serve.hf.space/generate/stream" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Explain what is AI ?", "max_new_tokens": 60}'
 ```
 
+Or open [the live demo](https://ssnym-transformer-serve.hf.space) in a browser for a chat UI.
+
+> Note: runs on free CPU hardware and sleeps after inactivity. The first request after idle may take 30–60s to wake up.
+
+## Run locally
+
 ```bash
-curl -X POST "https://ssnym-transformer-serve.hf.space/generate" \
+git clone https://github.com/ssnym/transformer-serve.git
+cd transformer-serve
+pip install -r requirements.txt
+uvicorn app:app --host 0.0.0.0 --port 8000
+```
+
+Open `http://127.0.0.1:8000` for the chat UI, or test the API:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/generate" \
   -H "Content-Type: application/json" \
   -d '{"prompt": "Explain what is AI"}'
 ```
 
-> Note: runs on free CPU hardware and sleeps after inactivity — first request after idle may take 30-60s to wake up.
 
-
-## Quick start with Docker
+## Run with the Docker image
 
 ```bash
 docker pull ssnym/transformer-serve:latest
 docker run -p 8000:8000 ssnym/transformer-serve:latest
 ```
 
-Open `http://localhost:8000` for the web UI, or call the API:
+The default model is `Qwen/Qwen2.5-0.5B-Instruct`. The image is about 700 MB, and the model (about 1 GB) downloads on first start.  
 
-```bash
-curl -X POST "http://localhost:8000/generate" \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "What is the capital of France?"}'
-```
-
-> The default model is `Qwen/Qwen2.5-0.5B-Instruct`. The image is about 700 MB; the model (about 1 GB) downloads on first start.
-
-### Use a different model
+Use a different model
 
 ```bash
 docker run -p 8000:8000 \
@@ -57,63 +64,51 @@ docker run -p 8000:8000 \
 
 
 
-## Run Locally
-```bash
 
-git clone https://github.com/ssnym/transformer-serve.git
-
-cd transformer-serve
-
-pip install -r requirements.txt
-
-uvicorn app:app --host 0.0.0.0 --port 8000
-```
-
-Test:
-```bash
-curl -X POST "http://127.0.0.1:8000/generate" \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "Explain what is AI"}'
-```
-
-### To build the image yourself.
-
-> Built with `Dockerfile.cpu` (CPU-only torch build). Default model is `Qwen/Qwen2.5-0.5B-Instruct` (~1GB) — first run downloads weights from Hugging Face Hub, so expect a few minutes on first start.
-
-Build:
+### Build your own image
 
 ```bash
 docker build -f Dockerfile.cpu -t transformer-serve:local .
 
-# Run (default model — Qwen2.5-0.5B-Instruct):
 docker run -p 8000:8000 transformer-serve:local
 ```
 
+> Built with `Dockerfile.cpu` (CPU-only torch build). Default model is `Qwen/Qwen2.5-0.5B-Instruct` (~1GB) — first run downloads weights from Hugging Face Hub, so expect a few minutes on first start.
 
 
-## API — `POST /generate`
+## API
 
-Request body:
-```json
-{
-"prompt": "Explain what is AI",
-"max_new_tokens": 120,
-"temperature": 0.7,
-"do_sample": true
-}
+### `POST /generate`
+
+```bash
+curl -X POST "http://127.0.0.1:8000/generate" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Explain what AI is ?", "max_new_tokens": 120, "temperature": 0.7, "do_sample": true}'
 ```
 
 Response:
+
 ```json
-{"output": "Artificial intelligence is the field of building systems that perform tasks requiring human-like reasoning..."}
+{"output": "Artificial intelligence is the field of building systems that..."}
 ```
 
-Omitted fields use the defaults in `app.py`. With `do_sample` set to `false`, the model uses greedy decoding and `temperature` has no effect.
+
+### `POST /generate/stream`
+
+Same request body as `/generate`, but the response streams as plain text, token by token.
+
+```bash
+curl -N -X POST "http://127.0.0.1:8000/generate/stream" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": Explain what AI is ?", "max_new_tokens": 60}'
+```
+
+`-N` turns off curl's buffering, so you see tokens as they arrive.
 
 
-## API — `GET /health`
+### `GET /health`
 
-Returns runtime info about the loaded model and device.
+Returns runtime info about the loaded model and device.  
 
 ```json
 {
@@ -128,13 +123,16 @@ Returns runtime info about the loaded model and device.
 }
 ```
 
+Omitted request fields use the defaults in `app.py`. With `do_sample` set to `false`, decoding is greedy and `temperature` has no effect.  
+
 ## Features
-- Supports Hugging Face seq2seq or causal text-generation models
+- Supports - Causal (decoder-only) and seq2seq (encoder-decoder) Hugging Face models
+- Chat-template support for instruct models
+- Streaming and one-shot responses
+- Configurable `max_new_tokens`, `temperature`, and `do_sample`
 - Automatic CPU/GPU detection
-- Configurable parameters `max_new_tokens`, `temperature`, `do_sample`
-- Input validation
-- Dockerized for portable deployment
-- Deployable to Hugging Face Spaces
+- Built-in chat UI at `/`
+- Dockerized, and deployable to Hugging Face Spaces
 
 ## Supported Model Types
 
