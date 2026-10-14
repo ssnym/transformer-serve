@@ -20,7 +20,7 @@ def generate_text(prompt:str, tokenizer, model, device, system_prompt,
                   max_new_tokens: int = 100, temperature: float = 0.6, do_sample: bool = True):
 
     text_in = build_input(prompt, tokenizer, model, system_prompt)
-    inputs = tokenizer(prompt, return_tensors="pt").to(device)
+    inputs = tokenizer(text_in, return_tensors="pt", add_special_tokens=False).to(device)
     gen_kwargs = {
         "max_new_tokens": max_new_tokens,
         "pad_token_id": tokenizer.eos_token_id,
